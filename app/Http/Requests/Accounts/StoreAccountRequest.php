@@ -7,30 +7,26 @@ use Illuminate\Foundation\Http\FormRequest;
 class StoreAccountRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return true;
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      *
-     * @return array
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name' => 'required_unless:type,gift-card',
-            'type' => 'required',
-            'description' => 'required_unless:type,gift-card',
-            'open_date' => 'required_if:type,loan',
-            'payment_amount' => 'required_if:type,loan|numeric',
-            'initial_balance' => 'required|numeric',
-            'interest_rate' => 'required_if:type,loan|numeric'
+            'account_type' => 'required|string',
+            'name' => 'required|string',
+            'institution_id' => 'required|exists:institutions,id',
+            'description' => 'nullable|string',
+            'type' => 'nullable|required_unless:account_type,credit-card|string',
+            'balance' => 'nullable|numeric',
+            'remaining_balance' => 'nullable|required_if:account_type,loan|numeric',
+            'original_balance' => 'nullable|required_if:account_type,loan|numeric',
+            'payment_amount' => 'nullable|required_if:account_type,loan|numeric',
+            'interest_rate' => 'nullable|numeric', 
+            'date_opened' => 'nullable|date',
+            'credit_limit' => 'nullable|numeric',
+            'brand' => 'nullable|required_if:account_type,credit-card|string',
         ];
     }
 }

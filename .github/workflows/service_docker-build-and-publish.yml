@@ -1,0 +1,68 @@
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        default: 'linux/amd64,linux/arm/v7,linux/arm64/v8'
+      docker-tags:
+        required: true
+        type: string
+      dockerfile:
+        type: string
+        default: './Dockerfile'
+      target:
+        type: string
+        default: 'release'
+
+jobs:
+  php-build-and-test:
+    uses: ./.github/workflows/service_install-and-test-php.yml
+
+  node-build:
+    uses: ./.github/workflows/service_install-and-build-node.yml
+    needs:
+      - php-build-and-test
+
+  docker-publish:
+    runs-on: ubuntu-22.04
+    needs:
+      - php-build-and-test
+      - node-build
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore composer cache
+        uses: actions/cache/restore@v4
+        id: composer-cache-restore
+        with:
+          path: vendor/
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-composer-vendor-${{ hashFiles('composer.lock') }}
+
+      - name: Check composer cache
+        if: steps.composer-cache-restore.outputs.cache-hit != 'true'
+        run: exit 1
+
+      - name: Restore public/build cache
+        uses: actions/cache/restore@v4
+        id: public-build-restore
+        with:
+          path: public/build/
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-public-build-${{ github.sha }}
+      
+      - name: Check public/build cache
+        if: steps.public-build-restore.outputs.cache-hit != 'true'
+        run: exit 1
+
+      - name: docker-build-action
+        uses: serversideup/github-action-docker-build@v4
+        with:
+          tags: "${{ inputs.docker-tags }}"
+          dockerfile: "${{ inputs.dockerfile }}"
+          registry-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          registry-token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          platforms: "${{ inputs.platforms }}"
+          target: "${{ inputs.target }}"

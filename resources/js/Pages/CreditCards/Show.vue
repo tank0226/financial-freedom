@@ -1,100 +1,39 @@
 <template>
-    <app-layout>
-        <div v-if="loaded">
-            <div class="mt-2 md:flex md:items-center md:justify-between">
-                <div class="flex-1 min-w-0">
-                    <h2 class="text-2xl font-bold leading-7 text-gray-900 flex items-center w-full sm:text-3xl sm:leading-9 sm:truncate">
-                        <img :src="creditCard.institution.logo" class="h-8 w-8 mr-2 rounded-full"/> {{ creditCard.name }}
-                    </h2>
-                </div>
-                <span class="relative z-0 inline-flex shadow-sm rounded-md">
-                    <button class="-ml-px relative cursor-pointer inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+    <Head :title="creditCard.name+' - Credit Cards'"/>
 
-                        Add Transaction
-                    </button>
-                    <button v-on:click="promptEdit()" class="-ml-px relative cursor-pointer inline-flex items-center px-4 py-3 rounded-r-md border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-
-                        Edit Account
-                    </button>
-                </span>
-            </div>
-        </div>
-        <div class="mt-5" v-if="loaded">
-            <stats
-                :account="creditCard"
-                :type="'credit-card'"
-                :fields="[
-                    'current_balance',
-                    'amount_changed',
-                    'transactions_changed'
-                ]"/>
-
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <transactions-table
-                    :account="creditCard"
-                    :columns="['amount', 'date', 'name', 'category']"
-                    :buttons="['filter', 'add']"/>
+    <div class="w-full flex flex-col overflow-y-scroll">
+        <div class="flex w-full justify-between mb-6">
+            <h1 class="font-semibold font-sans text-[#F5F5F6] text-3xl">{{ creditCard.name }}</h1>
+            <div class="flex items-center space-x-3">
+                <button @click="addTransaction" class="px-[14px] py-[10px] rounded-lg bg-[#155EEF] flex items-center text-[#F5F5F6] font-semibold">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-[6px]">
+                        <path d="M7.00033 1.16669V12.8334M1.16699 7.00002H12.8337" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Add Transaction
+                </button>
             </div>
         </div>
 
-        <edit/>
-    </app-layout>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6" >
+            
+        </div>
+    </div>
 </template>
 
 <script>
-    import CreditCardsAPI from '../../api/creditCards.js';
-    import AppLayout from './../../Layouts/AppLayout'
-    import { EventBus } from '../../event-bus.js';
-    import Edit from '../../Components/Accounts/CreditCard/Edit.vue';
-    import Stats from '../../Components/Accounts/Stats.vue';
-    import TransactionsTable from '../../Components/Transactions/TransactionsTable.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-    export default {
-        props: ['id'],
+export default {
+    layout: AuthenticatedLayout
+};
+</script>
 
-        data(){
-            return {
-                loaded: false,
-                creditCard: {}
-            }
-        },
+<script setup>
+import { computed } from 'vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { useEventBus } from '@vueuse/core'
 
-        components: {
-            AppLayout,
-            Edit,
-            Stats,
-            TransactionsTable
-        },
+const creditCard = computed(() => usePage().props.creditCard);
+const promptBus = useEventBus('ff-prompt-event-bus')
 
-        mounted(){
-            this.bindEvents();
-            this.loadCreditCard();
-        },
-
-        methods: {
-            bindEvents(){
-                EventBus.on('credit-card-updated', function(){
-                    this.loadCreditCard();
-                }.bind(this) );
-            },
-
-            promptEdit(){
-                EventBus.emit('prompt-edit-account', this.creditCard);
-            },
-
-            loadCreditCard(){
-                CreditCardsAPI.show( this.id )
-                    .then( function( response ){
-                        this.creditCard = response.data;
-                        this.loaded = true;
-                    }.bind(this) );
-            }
-        }
-    }
 </script>

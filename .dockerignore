@@ -1,4 +1,7 @@
-# Ignore anything GIT related
-.git*
-/_volumes
-Dockerfile-dev
+.vault-password
+.github
+.git
+.infrastructure
+Dockerfile
+docker-*.yml
+.gitlab-ci.yml

@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
 /public/storage
+/public/build
 /public/css/app.css
 /public/js/app.js
 /public/js/bug-snatch.js
@@ -15,7 +16,9 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+report.xml
 
 # Ignore the _volumes folder, except certain Traefik configs
 /_volumes/*
 !/_volumes/traefik
+.vault-password

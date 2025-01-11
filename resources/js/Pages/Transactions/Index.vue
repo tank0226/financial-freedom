@@ -1,110 +1,60 @@
 <template>
-    <app-layout>
-        <div>
-            <div class="mt-2 md:flex md:items-center md:justify-between">
-                <div class="flex-1 min-w-0">
-                    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:leading-9 sm:truncate">
-                        Transactions
-                    </h2>
-                </div>
+    <Head :title="'Transactions'"/>
+
+    <div class="w-full flex flex-col overflow-y-scroll">
+        <div class="flex w-full justify-between mb-6">
+            <h1 class="font-semibold font-sans text-[#F5F5F6] text-3xl">Transactions</h1>
+            <div class="flex items-center space-x-3">
+                <Link href="/transactions/import" class="rounded-lg shadow-sm px-[14px] py-[10px] flex items-center text-semibold text-[#CECFD2] font-semibold border border-[#333741]">
+                    <div class="w-[20px] h-[20px] mr-1 flex items-center justify-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15V16.2C21 17.8802 21 18.7202 20.673 19.362C20.3854 19.9265 19.9265 20.3854 19.362 20.673C18.7202 21 17.8802 21 16.2 21H7.8C6.11984 21 5.27976 21 4.63803 20.673C4.07354 20.3854 3.6146 19.9265 3.32698 19.362C3 18.7202 3 17.8802 3 16.2V15M17 8L12 3M12 3L7 8M12 3V15" stroke="#CECFD2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    
+                    Import
+                </Link>
+
+                <button @click="addTransaction" class="px-[14px] py-[10px] rounded-lg bg-[#155EEF] flex items-center text-[#F5F5F6] font-semibold">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-[6px]">
+                        <path d="M7.00033 1.16669V12.8334M1.16699 7.00002H12.8337" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Add Transaction
+                </button>
             </div>
         </div>
 
-        <h3 class="text-lg leading-4 font-medium text-gray-900 mt-5">
-            {{ dateRange }}
-        </h3>
-
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <total-spent/>
-
-            <total-income/>
-        </dl>
-
-        <div class="flex mt-5">
-            <div class="flex flex-col w-full">
-                <transactions-table
-                    :columns="['select', 'amount', 'date', 'account', 'name', 'category', 'edit']"
-                    :buttons="['filter', 'add']"
-                    :allow-searching="true"
-                    :categories="categories">
-
-                    <template v-slot:buttons>
-                        <button type="button" v-on:click="download()" class="relative inline-flex items-center px-4 py-3 rounded-l-md border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                            <!-- Heroicon name: download -->
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                            <span class="ml-1">Download</span>
-                        </button>
-
-                        <button type="button" class="-ml-px relative inline-flex items-center px-4 py-3 border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                            <!-- Heroicon name: refresh -->
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            <span class="ml-1">Sync</span>
-                        </button>
-
-                        <Link :href="'/transactions/import'" class="-ml-px relative inline-flex items-center px-4 py-3 border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                            <!-- Heroicon name: folder -->
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-                            </svg>
-                            <span class="ml-1">Import</span>
-                        </Link>
-                    </template>
-                </transactions-table>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-8">
+                <TransactionsTable/>
+            </div>
+            <div class="col-span-4">
+                <Filters/>
             </div>
         </div>
-    </app-layout>
+
+        <AddTransactionModal/>
+    </div>
 </template>
 
 <script>
-    import { FormatMoney } from '../../Mixins/formatMoney';
-    import { mapState } from 'vuex';
-    import { Link } from '@inertiajs/inertia-vue3';
-    import AppLayout from './../../Layouts/AppLayout'
-    import TotalSpent from './Index/TotalSpent';
-    import TotalIncome from './Index/TotalIncome';
-    import moment from 'moment';
-    import TransactionsTable from '../../Components/Transactions/TransactionsTable';
-    
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-    export default {
-        props: ['categories'],
+export default {
+    layout: AuthenticatedLayout
+};
+</script>
 
-        components: {
-            AppLayout,
-            TotalSpent,
-            TotalIncome,
-            TransactionsTable,
-            Link
-        },
+<script setup>
+import AddTransactionModal from './Partials/AddTransactionModal.vue';
+import Filters from './Partials/Filters.vue';
+import TransactionsTable from './Partials/TransactionsTable.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { useEventBus } from '@vueuse/core'
 
-        mixins: [
-            FormatMoney
-        ],
+const promptBus = useEventBus('ff-prompt-event-bus')
 
-        computed: {
-            ...mapState('transactions/table', {
-                transactions: state => state.transactions,
-                startDate: state => state.startDate,
-                endDate: state => state.endDate
-            }),
-
-            dateRange(){
-                if( this.startDate && this.endDate ){
-                    return moment( this.startDate ).format('LL')+' - '+moment( this.endDate ).format('LL');
-                }else{
-                    return '';
-                }
-            }
-        },
-
-        methods: {
-            download(){
-                
-            }
-        }
-    }
+const addTransaction = () => {
+    promptBus.emit('prompt-add-transaction');
+}
 </script>

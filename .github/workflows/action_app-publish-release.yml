@@ -1,0 +1,13 @@
+name: Docker Publish (Release)
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    uses: ./.github/workflows/service_docker-build-and-publish.yml
+    with:
+      docker-tags: "serversideup/financial-freedom:latest,serversideup/financial-freedom:${{ github.ref_name }}"
+      dockerfile: "./Dockerfile.php"
+    secrets: inherit

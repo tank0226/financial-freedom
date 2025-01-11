@@ -1,96 +1,118 @@
 <template>
-    <Head title="Log in" />
+    <GuestLayout>
+        <Head title="Log in" />
 
-    <jet-authentication-card>
-        <template #logo>
-            <jet-authentication-card-logo />
-        </template>
+        <div class="mx-auto w-[360px]">
+            <h2 class="mt-6 text-center text-3xl font-semibold text-[#F5F5F6]">
+                Log in to your account
+            </h2>
 
-        <jet-validation-errors class="mb-4" />
+            <div class="mt-3 mb-8 flex items-center justify-center">
+                <span class="font-sans text-base text-[#94969C]">
+                    Welcome back! Please enter your details.
+                </span>
+            </div>
+            
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
+            <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+                {{ status }}
+            </div>
+
+            <form @submit.prevent="submit">
+                <div>
+                    <InputLabel for="email" value="Email" class="text-[#CECFD2]" />
+
+                    <TextInput
+                        id="email"
+                        type="email"
+                        class="mt-1 block w-full font-sans text-base bg-transparent text-[#CECFD2]"
+                        v-model="form.email"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        placeholder="Enter your email"/>
+
+                    <InputError class="mt-2" :message="form.errors.email" />
+                </div>
+
+                <div class="mt-5">
+                    <InputLabel for="password" value="Password" class="text-[#CECFD2]" />
+
+                    <TextInput
+                        id="password"
+                        type="password"
+                        class="mt-1 block w-full bg-transparent text-[#CECFD2]"
+                        v-model="form.password"
+                        required
+                        autocomplete="current-password"/>
+
+                    <InputError class="mt-2" :message="form.errors.password" />
+                </div>
+
+                <div class="flex items-center justify-between mt-6">
+                    <label class="flex items-center">
+                        <Checkbox name="remember" class="bg-transparent" v-model:checked="form.remember" />
+                        <span class="ms-2 text-sm text-[#CECFD2]">Remember me</span>
+                    </label>
+                    <Link
+                        v-if="canResetPassword"
+                        :href="route('password.request')"
+                        class="font-sans text-sm text-[#CECFD2] font-semibold hover:underline">
+                            Forgot your password?
+                    </Link>
+                </div>
+
+                <div class="flex mt-6">
+                    <PrimaryButton class="w-full justify-center py-[10px] text-base rounded-lg" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        Sign in
+                    </PrimaryButton>
+                </div>
+
+                <div v-if="canRegister" class="mt-8 text-center">
+                    <span class="font-sans text-sm text-[#CECFD2]">
+                        Don't have an account?
+                    </span>
+                    <Link
+                        :href="route('register')"
+                        class="font-sans text-sm text-[#CECFD2] font-semibold hover:underline">
+                            Sign up
+                    </Link>
+                </div>
+            </form>
         </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <jet-label for="email" value="Email" />
-                <input id="email" type="email" class="rounded-md shadow-sm mt-1 block w-full" v-model="form.email" required autofocus />
-            </div>
-
-            <div class="mt-4">
-                <jet-label for="password" value="Password" />
-                <input id="password" class="rounded-md shadow-sm mt-1 block w-full" type="password" v-model="form.password" required autocomplete="current-password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <jet-checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900">
-                    Forgot your password?
-                </Link>
-
-                <jet-button class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </jet-button>
-            </div>
-        </form>
-    </jet-authentication-card>
+    </GuestLayout>
 </template>
 
-<script>
-    import { defineComponent } from 'vue'
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetCheckbox from '@/Jetstream/Checkbox.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
-    import JetValidationErrors from '@/Jetstream/ValidationErrors.vue'
-    import { Head, Link } from '@inertiajs/inertia-vue3';
+<script setup>
+import Checkbox from '@/Components/Checkbox.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
-    export default defineComponent({
-        components: {
-            Head,
-            JetAuthenticationCard,
-            JetAuthenticationCardLogo,
-            JetButton,
-            JetCheckbox,
-            JetLabel,
-            JetValidationErrors,
-            Link,
-        },
+defineProps({
+    canRegister: {
+        type: Boolean,
+    },
+    canResetPassword: {
+        type: Boolean,
+    },
+    status: {
+        type: String,
+    },
+});
 
-        props: {
-            canResetPassword: Boolean,
-            status: String
-        },
+const form = useForm({
+    email: '',
+    password: '',
+    remember: false,
+});
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    email: '',
-                    password: '',
-                    remember: false
-                })
-            }
-        },
-
-        methods: {
-            submit() {
-                this.form
-                    .transform(data => ({
-                        ... data,
-                        remember: this.form.remember ? 'on' : ''
-                    }))
-                    .post(this.route('login'), {
-                        onFinish: () => this.form.reset('password'),
-                    })
-            }
-        }
-    })
+const submit = () => {
+    form.post(route('login'), {
+        onFinish: () => form.reset('password'),
+    });
+};
 </script>

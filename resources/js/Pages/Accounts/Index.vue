@@ -1,140 +1,98 @@
 <template>
-    <app-layout>
-        <div>
-            <div class="mt-2 md:flex md:items-center md:justify-between">
-                <div class="flex-1 min-w-0">
-                    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:leading-9 sm:truncate">
-                        Accounts
-                    </h2>
-                </div>
-                <span class="relative z-0 inline-flex shadow-sm rounded-md">
-                    <button v-on:click="promptAddAccount()" class="-ml-px relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                    </button>
-                </span>
+    <Head :title="'Accounts'"/>
+
+    <div class="w-full flex flex-col overflow-y-scroll">
+        <div class="flex w-full justify-between mb-6">
+            <h1 class="font-semibold font-sans text-[#F5F5F6] text-3xl">Accounts</h1>
+            <div class="flex items-center space-x-3">
+                <button @click="addAccount" class="px-[14px] py-[10px] rounded-lg bg-[#155EEF] flex items-center text-[#F5F5F6] font-semibold">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-[6px]">
+                        <path d="M7.00033 1.16669V12.8334M1.16699 7.00002H12.8337" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Add Account
+                </button>
             </div>
         </div>
-        <div class="mt-5 grid grid-cols-3 gap-4">
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Checking Accounts</h2>
-            <checking-account-card
-                v-for="(account, index) in accounts.checking_accounts"
-                v-bind:key="'account-checking-account-'+index"
-                :account="account"
-                />
 
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Savings Accounts</h2>
-            <savings-account-card
-                v-for="(account, index) in accounts.savings_accounts"
-                v-bind:key="'account-savings-account-'+index"
-                :account="account"
-                :type="'Savings'"
-                />
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6" v-if="hasAccounts">
+            <NetWorth 
+                :transactions="[]"
+                :assets="assets"
+                :liabilities="liabilities"/>
 
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Credit Accounts</h2>
-            <credit-account-card
-                v-for="(account, index) in accounts.credit_cards"
-                v-bind:key="'account-credit-card-'+index"
-                :account="account"
-                :type="'Credit Card'"
-                />
+            <div class="grid grid-cols-1 gap-6 md:col-span-3">
+                <CashAccountsTable
+                    v-if="cashAccounts.length > 0"/>
+                <CreditCardsTable
+                    v-if="creditCards.length > 0"/>
+                <LoansTable
+                    v-if="loans.length > 0"/>
+            </div>
 
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Loans</h2>
-            <loan-card
-                v-for="(account, index) in accounts.loans"
-                v-bind:key="'account-loan-'+index"
-                :account="account"
-                />
-
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Cash Acconts</h2>
-            <cash-account-card
-                v-for="(account, index) in accounts.cash_accounts"
-                v-bind:key="'account-cash-'+index"
-                :account="account"
-                />
-            
-            <h2 class="col-span-3 text-gray-900 text-xl font-bold">Gift Cards</h2>        
-            <gift-card-card 
-                v-for="(account, index) in accounts.gift_cards"
-                v-bind:key="'account-gift-card-'+index"
-                :account="account"
-                :type="'Gift Card'"
-                />
+            <div class="md:col-span-2">
+                <AccountSummary
+                    :assets="assets"
+                    :liabilities="liabilities"/>
+            </div>
         </div>
-        
-        <a href="https://clearbit.com" target="_blank" class="text-xs mt-10 text-gray-900">Logos provided by Clearbit</a>
 
-        <add-account
-            :institutions="institutions"/>
+        <EmptyState v-else/>
+    </div>
 
-    </app-layout>
+    <AddAccountModal/>
 </template>
 
 <script>
-    import AppLayout from '@/Layouts/AppLayout'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-    import CashAccountCard from '@/Components/Accounts/CashAccountCard.vue';
-    import LoanCard from '@/Components/Accounts/LoanCard.vue';
-    import CheckingAccountCard from '@/Components/Accounts/CheckingAccountCard';
-    import SavingsAccountCard from '@/Components/Accounts/SavingsAccountCard';
-    import CreditAccountCard from '@/Components/Accounts/CreditAccountCard';
-    import GiftCardCard from '@/Components/Accounts/GiftCardCard.vue';
-    import AddAccount from '@/Components/Accounts/AddAccount.vue';
-    import AccountsAPI from '@/api/accounts.js';
-    import InstitutionsAPI from '@/api/institutions.js';
+export default {
+    layout: AuthenticatedLayout
+};
+</script>
 
-    import { EventBus } from '@/event-bus.js';
+<script setup>
+import AccountSummary from './Partials/AccountSummary.vue';
+import AddAccountModal from './Partials/AddAccountModal.vue';
+import CashAccountsTable from './Partials/CashAccountsTable.vue';
+import CreditCardsTable from './Partials/CreditCardsTable.vue';
+import LoansTable from './Partials/LoansTable.vue';
+import EmptyState from './Partials/EmptyState.vue';
+import NetWorth from './Partials/NetWorth.vue';
+import { computed } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
+import { useEventBus } from '@vueuse/core'
 
-    export default {
-        data(){
-            return {
-                institutions: [],
-                accounts: []
-            }
-        },
+const cashAccounts = computed(() => usePage().props.cashAccounts);
+const creditCards = computed(() => usePage().props.creditCards);
+const loans = computed(() => usePage().props.loans);
+const hasAccounts = computed(() => cashAccounts.value.length > 0 || creditCards.value.length > 0);
 
-        components: {
-            AppLayout,
-            CashAccountCard,
-            LoanCard,
-            CheckingAccountCard,
-            SavingsAccountCard,
-            CreditAccountCard,
-            GiftCardCard,
-            AddAccount
-        },
+const promptBus = useEventBus('ff-prompt-event-bus')
 
-        mounted(){
-            this.bindEvents();
-            this.loadAccounts();
-            this.loadInstitutions();
-        },
+const addAccount = () => {
+    promptBus.emit('prompt-add-account');
+}
 
-        methods: {
-            bindEvents(){
-                EventBus.on('reload-accounts', function(){
-                    this.loadAccounts();
-                }.bind(this));
-            },
+const assets = computed(() => {
+    return cashAccounts.value.reduce((acc, account) => {
+        return parseFloat( acc ) + parseFloat( account.balance );
+    }, 0);
+});
 
-            loadAccounts(){
-                AccountsAPI.index()
-                    .then( function( response ){
-                        this.accounts = response.data;
-                    }.bind(this) );
-            },
+const creditCardTotal = computed(() => {
+    return creditCards.value.reduce((acc, account) => {
+        return parseFloat( acc ) + parseFloat( account.balance );
+    }, 0);
+});
 
-            loadInstitutions(){
-                InstitutionsAPI.index()
-                    .then( function( response ){
-                        this.institutions = response.data;
-                    }.bind(this) );
-            },
+const loansTotal = computed(() => {
+    return loans.value.reduce((acc, account) => {
+        return parseFloat( acc ) + parseFloat( account.remaining_balance );
+    }, 0);
+});
 
-            promptAddAccount(){
-                EventBus.emit('prompt-add-account');
-            }
-        }
-    }
+const liabilities = computed(() => {
+    return parseFloat( creditCardTotal.value ) + parseFloat( loansTotal.value );
+});
+
 </script>

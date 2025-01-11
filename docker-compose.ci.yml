@@ -1,27 +1,30 @@
-version: '3.7'
 services:
-
   php:
+    build:
+      context: .
+      dockerfile: Dockerfile.php
+      target: ci
     networks:
-      - web-ci
+      - ci
     volumes:
       - .:/var/www/html/
-  mariadb:
-    networks:
-      - web-ci
-    environment:
-        MYSQL_ROOT_PASSWORD: "cirootpassword"
-        MYSQL_DATABASE: "cidatabase"
-        MYSQL_USER: "ciuser"
-        MYSQL_PASSWORD: "cipassword"
+    working_dir: /var/www/html/
 
   node:
-    image: node:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+      target: base
+    networks:
+      - ci
     volumes:
-      - .:/usr/src/app/
+      - .:/usr/src/app/:cached
     working_dir: /usr/src/app/
-    networks: 
-      - web-ci
+
+  mailpit:
+    image: axllent/mailpit
+    networks:
+      - ci
 
 networks:
-  web-ci:
+  ci:
